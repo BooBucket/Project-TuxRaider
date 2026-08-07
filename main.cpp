@@ -1,8 +1,11 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+
 
 //Player's variables
 int coins = 0;
 bool isLevelComplete = false;
+bool isWinTrackPlayed = false;
 
 //Maze Configuration
 const int MAP_WIDTH = 20;
@@ -11,7 +14,7 @@ const int MAP_HEIGHT = 15;
 int maze[MAP_HEIGHT][MAP_WIDTH] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,3,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,3,1,0,0,0,0,0,0,0,1,1,1,1,1,1},
     {1,0,0,3,0,0,1,0,0,0,0,0,0,0,1,0,0,0,4,1},
     {1,3,0,2,0,0,1,0,0,0,0,0,0,0,1,3,0,1,1,1},
@@ -33,7 +36,7 @@ int maze[MAP_HEIGHT][MAP_WIDTH] = {
 //4 - Flag
 
 //Function that checks wall's collision with player
-bool checkWallCollision(sf::CircleShape& player, int maze[MAP_HEIGHT] [MAP_WIDTH], sf::RectangleShape& wallTemplate) {
+bool checkWallCollision(sf::Sprite& player, int maze[MAP_HEIGHT] [MAP_WIDTH], sf::RectangleShape& wallTemplate) {
     for (int i = 0; i < MAP_HEIGHT; ++i) {
         for (int j = 0; j < MAP_WIDTH; ++j) {
             if (maze[i][j] == 1) {
@@ -53,17 +56,47 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Adventure Creator");
     window.setFramerateLimit(60);
 
-    //Preload Fonts and Stuff
+    //Preload Assets
     sf::Font font;
     if (!font.loadFromFile("lato-latin.ttf")) {
         font.loadFromFile("lato-latin.ttf");
     }
 
-    //Creates the player
-    sf::CircleShape ball(10.f);
-    ball.setFillColor(sf::Color::Blue);
-    ball.setPosition(60.f, 60.f);
+    sf::SoundBuffer coinSBuffer;
+    if (!coinSBuffer.loadFromFile("coin-collect.wav")) {
+        return 0;
+    }
+    sf::Sound coinSound;
+    coinSound.setBuffer(coinSBuffer);
 
+    sf::SoundBuffer trapSBuffer;
+    if (!trapSBuffer.loadFromFile("pop.wav")) {
+        return 0;
+    }
+    sf::Sound trapSound;
+    trapSound.setBuffer(trapSBuffer);
+
+    sf::SoundBuffer victorySBuffer;
+    if (!victorySBuffer.loadFromFile("victory.wav")) {
+        return 0;
+    }
+    sf::Sound victorySound;
+    victorySound.setBuffer(victorySBuffer);
+
+    sf::Texture tuxRight, tuxLeft, tuxUp, tuxDown;
+    tuxRight.loadFromFile("walk-right.png");
+    tuxLeft.loadFromFile("walk-left.png");
+    tuxUp.loadFromFile("walk-up.png");
+    tuxDown.loadFromFile("walk-down.png");
+
+    //Creates the player
+    sf::Sprite tux;
+    tux.setTexture(tuxDown);
+    tux.setPosition(60.f, 60.f);
+
+    //Animation Clock
+    sf::Clock animationClock;
+    int currentFrame = 0;
     //Creates the wall
     sf::RectangleShape wall(sf::Vector2f(40.f, 40.f));
     wall.setFillColor(sf::Color::Blue);
@@ -99,55 +132,84 @@ int main() {
     //Main cycle
     while (window.isOpen()) {
         sf::Event event;
-        sf::Vector2 pos = ball.getPosition();
+        sf::Vector2 pos = tux.getPosition();
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
         }
 
+        if (animationClock.getElapsedTime().asSeconds() > 0.1f) {
+            currentFrame = (currentFrame + 1) % 4;
+            animationClock.restart();
+        }
+
         if (!isLevelComplete) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && pos.x < 780.f) {
-                ball.move(2.5f, 0.f);
-                if (checkWallCollision(ball, maze, wall)) {
-                    ball.move(-2.5f, 0.f);
+
+                tux.setTexture(tuxRight);
+                tux.setTextureRect(sf::IntRect(currentFrame * 32, 0, 32, 32));
+
+                tux.move(2.5f, 0.f);
+                if (checkWallCollision(tux, maze, wall)) {
+                    tux.move(-2.5f, 0.f);
                 }
             }
         }
 
         if (!isLevelComplete) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && pos.x > 0.f) {
-                ball.move(-2.5f, 0.f);
-                if (checkWallCollision(ball, maze, wall)) {
-                    ball.move(2.5f, 0.f);
+
+                tux.setTexture(tuxLeft);
+                tux.setTextureRect(sf::IntRect(currentFrame * 32, 0, 32, 32));
+
+                tux.move(-2.5f, 0.f);
+                if (checkWallCollision(tux, maze, wall)) {
+                    tux.move(2.5f, 0.f);
                 }
             }
         }
 
         if (!isLevelComplete) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && pos.y > 0.f) {
-                ball.move(0.f, -2.5f);
-                if (checkWallCollision(ball, maze, wall)) {
-                    ball.move(0.f, 2.5f);
+
+                tux.setTexture(tuxUp);
+                tux.setTextureRect(sf::IntRect(currentFrame * 32, 0, 32, 32));
+
+                tux.move(0.f, -2.5f);
+                if (checkWallCollision(tux, maze, wall)) {
+                    tux.move(0.f, 2.5f);
                 }
             }
         }
 
         if (!isLevelComplete) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && pos.y < 580.f) {
-                ball.move(0.f, 2.5f);
-                if (checkWallCollision(ball, maze, wall)) {
-                    ball.move(0.f, -2.5f);
+
+                tux.setTexture(tuxDown);
+                tux.setTextureRect(sf::IntRect(currentFrame * 32, 0, 32, 32));
+
+                tux.move(0.f, 2.5f);
+                if (checkWallCollision(tux, maze, wall)) {
+                    tux.move(0.f, -2.5f);
                 }
             }
+        }
+
+        if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Up) &&
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) 
+        {
+            tux.setTextureRect(sf::IntRect(0, 0, 32, 32));
         }
 
 
         window.clear(sf::Color::Black);
 
-        //Add the code between clear and display if needed
+        //Map drawing section
 
-        window.draw(ball); //Draws Ball
+        window.draw(tux); //Draws tux
 
         //Draw Maze
         for (int i = 0; i<MAP_HEIGHT; ++i) {
@@ -158,9 +220,10 @@ int main() {
                 }
                 else if (maze[i][j] == 2) {
                     coin.setPosition(j * 40.f, i * 40.f);
-                    if (ball.getGlobalBounds().intersects(coin.getGlobalBounds())) {
+                    if (tux.getGlobalBounds().intersects(coin.getGlobalBounds())) {
                         maze[i][j] = 0;
                         ++coins;
+                        coinSound.play();
                     }
                     else {
                         window.draw(coin);
@@ -168,8 +231,9 @@ int main() {
                 }
                 else if (maze[i][j] == 3) {
                     trap.setPosition(j * 40.f, i * 40.f);
-                    if (ball.getGlobalBounds().intersects(trap.getGlobalBounds())) {
-                        ball.setPosition(60.f, 60.f);
+                    if (tux.getGlobalBounds().intersects(trap.getGlobalBounds())) {
+                        tux.setPosition(60.f, 60.f);
+                        trapSound.play();
                     }
                     else {
                         window.draw(trap);
@@ -177,8 +241,12 @@ int main() {
                 }
                 else if (maze[i][j] == 4) {
                     flag.setPosition(j * 40.f + 10.f, i * 40.f + 5.f);
-                    if (ball.getGlobalBounds().intersects(flag.getGlobalBounds())) {
+                    if (tux.getGlobalBounds().intersects(flag.getGlobalBounds())) {
                         isLevelComplete = true;
+                        if (!isWinTrackPlayed) {
+                            victorySound.play();
+                            isWinTrackPlayed = true;
+                        }
                     }
                     else {
                         window.draw(flag);
