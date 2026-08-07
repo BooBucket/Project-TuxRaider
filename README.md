@@ -1,4 +1,4 @@
-# Project-Raider
+# Tux Raiders
 Project Raider is an Open-Source game about raiding dungeons.
 
 # About
