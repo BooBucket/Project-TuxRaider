@@ -53,7 +53,7 @@ bool checkWallCollision(sf::Sprite& player, int maze[MAP_HEIGHT] [MAP_WIDTH], sf
 
 int main() {
     // Creates Window with 800 by 600 size
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Adventure Creator");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Tux Raiders");
     window.setFramerateLimit(60);
 
     //Preload Assets
@@ -89,6 +89,9 @@ int main() {
     tuxUp.loadFromFile("walk-up.png");
     tuxDown.loadFromFile("walk-down.png");
 
+    sf::Texture trapTexture;
+    trapTexture.loadFromFile("mine.png");
+
     //Creates the player
     sf::Sprite tux;
     tux.setTexture(tuxDown);
@@ -106,8 +109,8 @@ int main() {
     coin.setFillColor(sf::Color::Yellow);
 
     //Creates the trap
-    sf::RectangleShape trap(sf::Vector2f(25.f, 25.f));
-    trap.setFillColor(sf::Color::Red);
+    sf::Sprite trap;
+    trap.setTexture(trapTexture);
 
     //Creates the flag
     sf::RectangleShape flag(sf::Vector2f(20.f, 30.f));
@@ -230,8 +233,16 @@ int main() {
                     }
                 }
                 else if (maze[i][j] == 3) {
-                    trap.setPosition(j * 40.f, i * 40.f);
-                    if (tux.getGlobalBounds().intersects(trap.getGlobalBounds())) {
+                    trap.setPosition(j * 40.f - 4.f, i * 40.f - 4.f);
+
+                    sf::FloatRect trapHitbox (
+                        j * 40.f + 12.f,
+                        i * 40.f + 12.f,
+                        16.f,
+                        16.f
+                    );
+
+                    if (tux.getGlobalBounds().intersects(trapHitbox)) {
                         tux.setPosition(60.f, 60.f);
                         trapSound.play();
                     }
