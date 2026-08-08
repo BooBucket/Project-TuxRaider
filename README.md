@@ -3,7 +3,7 @@ Tux Raiders is an Open-Source game about raiding dungeons.
 
 # About
 Tux Raiders is a game, that started in August 2026. Written by Druid28 in C++.
-[!Game picture] (game_screenshot.png)
+[!Game picture](game_screenshot.png)
 
 # Installation
 1. Clone the repo (obviously)
