@@ -4,6 +4,7 @@
 
 //Player's variables
 int coins = 0;
+int lives = 3;
 bool isLevelComplete = false;
 bool isWinTrackPlayed = false;
 
@@ -13,19 +14,19 @@ const int MAP_HEIGHT = 15;
 
 int maze[MAP_HEIGHT][MAP_WIDTH] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,3,1,0,0,0,0,0,0,0,1,1,1,1,1,1},
-    {1,0,0,3,0,0,1,0,0,0,0,0,0,0,1,0,0,0,4,1},
-    {1,3,0,2,0,0,1,0,0,0,0,0,0,0,1,3,0,1,1,1},
-    {1,0,0,0,0,3,1,1,1,1,0,0,0,0,1,0,2,1,0,1},
-    {1,0,3,2,0,0,0,2,2,1,0,0,0,0,1,3,0,1,0,1},
-    {1,0,0,0,0,3,0,2,2,1,0,0,0,0,1,0,0,1,0,1},
-    {1,3,0,3,0,0,0,2,2,1,0,0,0,0,1,3,0,1,0,1},
-    {1,0,0,1,1,1,1,1,1,1,0,0,0,0,1,0,0,1,0,1},
-    {1,0,0,1,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1},
-    {1,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,3,0,0,0,3,0,0,0,2,3,0,0,0,1},
+    {1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,3,0,1},
+    {1,1,1,1,0,0,0,0,0,0,2,0,0,3,0,0,0,0,2,1},
+    {1,0,0,1,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,2,0,0,0,3,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,3,0,0,0,0,2,0,0,0,0,0,0,1},
+    {1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,3,2,0,1},
+    {1,1,1,1,0,0,0,0,0,3,2,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,2,0,0,0,3,0,0,2,3,0,0,0,1},
+    {1,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0,0,0,0,1},
+    {1,0,3,2,0,0,0,0,1,1,0,1,1,0,0,0,3,0,0,1},
+    {1,0,0,0,0,0,0,0,1,0,4,0,1,0,0,2,0,0,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 //Map Legend:
@@ -36,7 +37,7 @@ int maze[MAP_HEIGHT][MAP_WIDTH] = {
 //4 - Flag
 
 //Function that checks wall's collision with player
-bool checkWallCollision(sf::Sprite& player, int maze[MAP_HEIGHT] [MAP_WIDTH], sf::RectangleShape& wallTemplate) {
+bool checkWallCollision(sf::Sprite& player, int maze[MAP_HEIGHT] [MAP_WIDTH], sf::Sprite& wallTemplate) {
     for (int i = 0; i < MAP_HEIGHT; ++i) {
         for (int j = 0; j < MAP_WIDTH; ++j) {
             if (maze[i][j] == 1) {
@@ -92,29 +93,38 @@ int main() {
     sf::Texture trapTexture;
     trapTexture.loadFromFile("mine.png");
 
+    sf::Texture flagTexture;
+    flagTexture.loadFromFile("flag.png");
+
+    sf::Texture coinTexture;
+    coinTexture.loadFromFile("coin.png");
+
+    sf::Texture wallTexture;
+    wallTexture.loadFromFile("wall.png");
+
     //Creates the player
     sf::Sprite tux;
     tux.setTexture(tuxDown);
-    tux.setPosition(60.f, 60.f);
+    tux.setPosition(60.f, 270.f);
 
     //Animation Clock
     sf::Clock animationClock;
     int currentFrame = 0;
     //Creates the wall
-    sf::RectangleShape wall(sf::Vector2f(40.f, 40.f));
-    wall.setFillColor(sf::Color::Blue);
+    sf::Sprite wall;
+    wall.setTexture(wallTexture);
 
     //Creates the coin
-    sf::CircleShape coin(7.f);
-    coin.setFillColor(sf::Color::Yellow);
+    sf::Sprite coin;
+    coin.setTexture(coinTexture);
 
     //Creates the trap
     sf::Sprite trap;
     trap.setTexture(trapTexture);
 
     //Creates the flag
-    sf::RectangleShape flag(sf::Vector2f(20.f, 30.f));
-    flag.setFillColor(sf::Color::Magenta);
+    sf::Sprite flag;
+    flag.setTexture(flagTexture);
 
 
     //Creates the GUI
@@ -124,11 +134,14 @@ int main() {
     coinsText.setFillColor(sf::Color::White);
     coinsText.setPosition(20.f, 10.f);
 
+    sf::Text livesText;
+    livesText.setFont(font);
+
     sf::Text passText;
     passText.setFont(font);
     passText.setCharacterSize(50);
     passText.setString("Captured the Flag!");
-    passText.setFillColor(sf::Color::White);
+    passText.setFillColor(sf::Color::Black);
     passText.setPosition(200.f, 250.f);
 
 
@@ -208,7 +221,7 @@ int main() {
         }
 
 
-        window.clear(sf::Color::Black);
+        window.clear(sf::Color(190, 225, 245));
 
         //Map drawing section
 
@@ -243,7 +256,7 @@ int main() {
                     );
 
                     if (tux.getGlobalBounds().intersects(trapHitbox)) {
-                        tux.setPosition(60.f, 60.f);
+                        tux.setPosition(60.f, 270.f);
                         trapSound.play();
                     }
                     else {
