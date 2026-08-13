@@ -7,6 +7,7 @@ int coins = 0;
 int lives = 3;
 bool isLevelComplete = false;
 bool isWinTrackPlayed = false;
+bool isLevelLost = false;
 
 //Maze Configuration
 const int MAP_WIDTH = 20;
@@ -102,6 +103,13 @@ int main() {
     sf::Texture wallTexture;
     wallTexture.loadFromFile("wall.png");
 
+    sf::SoundBuffer bgMusicBuffer;
+    if (!bgMusicBuffer.loadFromFile("raid1.wav")) {
+        return 0;
+    }
+    sf::Sound bgMusic;
+    bgMusic.setBuffer(bgMusicBuffer);
+
     //Creates the player
     sf::Sprite tux;
     tux.setTexture(tuxDown);
@@ -110,6 +118,7 @@ int main() {
     //Animation Clock
     sf::Clock animationClock;
     int currentFrame = 0;
+
     //Creates the wall
     sf::Sprite wall;
     wall.setTexture(wallTexture);
@@ -144,6 +153,18 @@ int main() {
     passText.setFillColor(sf::Color::Black);
     passText.setPosition(200.f, 250.f);
 
+    sf::Text lostText;
+    lostText.setFont(font);
+    lostText.setCharacterSize(50);
+    lostText.setString("Game Over!");
+    lostText.setFillColor(sf::Color::Black);
+    lostText.setPosition(200.f, 250.f);
+
+    //Background music properties
+    bgMusic.setLoop(true);
+    bgMusic.setVolume(50);
+
+    bgMusic.play();
 
     //Main cycle
     while (window.isOpen()) {
@@ -215,11 +236,10 @@ int main() {
         if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Right) &&
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&
             !sf::Keyboard::isKeyPressed(sf::Keyboard::Up) &&
-            !sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) 
+            !sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
         {
             tux.setTextureRect(sf::IntRect(0, 0, 32, 32));
         }
-
 
         window.clear(sf::Color(190, 225, 245));
 
@@ -256,6 +276,7 @@ int main() {
                     );
 
                     if (tux.getGlobalBounds().intersects(trapHitbox)) {
+			lives -= 1;
                         tux.setPosition(60.f, 270.f);
                         trapSound.play();
                     }
@@ -285,6 +306,10 @@ int main() {
 
         if (isLevelComplete) {
             window.draw(passText);
+        }
+
+	if (isLevelLost) {
+	    window.draw(lostText);
         }
 
         window.display();
