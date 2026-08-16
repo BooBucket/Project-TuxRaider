@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <fstream>
 
 
 //Player's variables
@@ -13,29 +14,7 @@ bool isLevelLost = false;
 const int MAP_WIDTH = 20;
 const int MAP_HEIGHT = 15;
 
-int maze[MAP_HEIGHT][MAP_WIDTH] = {
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,3,0,0,0,3,0,0,0,2,3,0,0,0,1},
-    {1,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,3,0,1},
-    {1,1,1,1,0,0,0,0,0,0,2,0,0,3,0,0,0,0,2,1},
-    {1,0,0,1,0,0,0,0,0,0,3,0,0,0,2,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,2,0,0,0,3,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,3,0,0,0,0,2,0,0,0,0,0,0,1},
-    {1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,3,2,0,1},
-    {1,1,1,1,0,0,0,0,0,3,2,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,2,0,0,0,3,0,0,2,3,0,0,0,1},
-    {1,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0,0,0,0,1},
-    {1,0,3,2,0,0,0,0,1,1,0,1,1,0,0,0,3,0,0,1},
-    {1,0,0,0,0,0,0,0,1,0,4,0,1,0,0,2,0,0,0,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
-//Map Legend:
-//0 - Free Space
-//1 - Wall
-//2 - Coin
-//3 - Trap
-//4 - Flag
+
 
 //Function that checks wall's collision with player
 bool checkWallCollision(sf::Sprite& player, int maze[MAP_HEIGHT] [MAP_WIDTH], sf::Sprite& wallTemplate) {
@@ -51,6 +30,23 @@ bool checkWallCollision(sf::Sprite& player, int maze[MAP_HEIGHT] [MAP_WIDTH], sf
         }
     }
     return false;
+}
+
+bool loadRaid(int maze[MAP_HEIGHT][MAP_WIDTH], const std::string& filename) {
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        return false;
+    }
+
+    for (int i = 0; i < MAP_HEIGHT; ++i) {
+        for (int j = 0; j < MAP_WIDTH; ++j) {
+            file >> maze[i][j];
+        }
+    }
+
+    file.close();
+    return true;
 }
 
 int main() {
@@ -165,6 +161,13 @@ int main() {
     bgMusic.setVolume(50);
 
     bgMusic.play();
+
+    //Load map
+    int maze[MAP_HEIGHT][MAP_WIDTH];
+
+    if (!loadRaid(maze, "levels/test.raid")) {
+        return 0;
+    }
 
     //Main cycle
     while (window.isOpen()) {
