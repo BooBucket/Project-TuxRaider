@@ -12,3 +12,5 @@ Tux Raiders is a game, that started in August 2026. Written by Druid28 on C++.
 4. Compile the script (on Linux: g++ main.cpp -o tuxraid -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio)
 
 You can also test the template level running game file in terminal (./game)
+
+bradar
